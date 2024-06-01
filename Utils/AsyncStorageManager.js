@@ -56,6 +56,32 @@ export class AsyncStorageManager {
         }
     }
 
+    static async removeFromArrayById(key, id) {
+        try {
+            const existingArray = await AsyncStorageManager.getItem(key);
+            const isIdExists = await AsyncStorageManager.isIdExists(key, id);
+            if (existingArray && Array.isArray(existingArray) && isIdExists) {
+                existingArray.splice(id, 1)
+                await AsyncStorageManager.setItem(key, existingArray);
+            } else {
+                throw new Error(`Item ${key} does not exist or is not an array`);
+            }
+        } catch (error) {
+            throw new Error(`Error removing element from array ${key}: ${error.message}`);
+        }
+    }
+
+    static async isIdExists(key, id){
+        try {
+            const existingArray = await AsyncStorageManager.getItem(key);
+            if (existingArray && Array.isArray(existingArray)) {
+                return id <= existingArray.length - 1
+            }
+        } catch (error) {
+            throw new Error(`Error removing element from array ${key}: ${error.message}`);
+        }
+    }
+
     static async isInArray(key, element, callback=null) {
         try {
             const existingArray = await AsyncStorageManager.getItem(key);
@@ -78,7 +104,7 @@ export class AsyncStorageManager {
                 if (callback !== null) {
                     callback(false)
                 } else {
-                    return flase
+                    return false
                 }
             }
         } catch (error) {

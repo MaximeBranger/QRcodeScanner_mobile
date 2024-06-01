@@ -1,8 +1,10 @@
 
-import {View, Text, ScrollView, StyleSheet} from 'react-native';
+import {StyleSheet, ActivityIndicator, FlatList} from 'react-native';
 import {AsyncStorageManager} from "../Utils/AsyncStorageManager";
-import {useEffect, useState} from "react";
+import {useEffect, useState, useContext } from "react";
 import HistoryButton from "../Component/HistoryButton";
+import Colors from "../Utils/Colors";
+import {HistoryStyle} from "../Style/HistoryStyle";
 
 
 export default function HistoryScreen({navigation}) {
@@ -10,68 +12,48 @@ export default function HistoryScreen({navigation}) {
     const [history, setHistory] = useState([]);
     const [needUpdate, setNeedUpdate] = useState(false);
 
+    const [isLoading, setIsLoading] = useState(true);
+    const [page, setPage] = useState(1);
+
     const update = () => {
-        setNeedUpdate(!update);
+        setNeedUpdate(!needUpdate);
     }
 
     const getHistory = async () => {
+        setIsLoading(true);
         const value = await AsyncStorageManager.getItem('history');
         if (value !== null) {
-            setHistory(value);
+            setHistory(value.slice(0, page * 10));
         }
+        setIsLoading(false);
     }
+
+    const renderItem = ({ item, index }) => (
+        <HistoryButton id={index} value={item} callback={update}/>
+    );
+
+    const renderFooter = () => {
+        if (!isLoading) return null;
+        return <ActivityIndicator size="large" color={Colors.primary} />;
+    };
 
     useEffect(() => {
         getHistory();
     }, [needUpdate]);
 
     return (
-        <ScrollView style={{paddingTop: 30, backgroundColor: '#EAE0CC', height: '100%' }}>
-            { history.length === 0 && <Text>Aucun historique</Text>}
-            { history.length > 0 && history.map((h, i) => <HistoryButton key={i} value={h} callback={update}/>)}
-            <View style={{height: 50}}></View>
-        </ScrollView>
+        <FlatList
+            data={history}
+            renderItem={ renderItem }
+            keyExtractor={(item, index) => index.toString()}
+            onEndReached={() => {
+                getHistory();
+                setPage(page + 1);
+            }}
+            onEndReachedThreshold={0.1} // Trigger fetchData when 10% from the bottom
+            ListFooterComponent={renderFooter}
+            style={ HistoryStyle.flatlist}
+        />
+
     );
 }
-
-
-const styles = StyleSheet.create({
-    main_title: {
-        fontSize: 30,
-        fontWeight: "bold",
-    },
-    subtitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 10
-    },
-    button: {
-        alignItems: 'center',
-        borderRadius: 5,
-        backgroundColor:"#87A878",
-        height:40,
-        minWidth:120,
-        padding: 10,
-        margin: 10,
-    },
-    button_open: {
-        backgroundColor: '#DBF9B8'
-    },
-    button_camera: {
-        position: "absolute",
-        width: 40,
-        alignItems: 'center',
-        borderRadius: 30,
-        backgroundColor: "#FFFFFF",
-        opacity: .7,
-        padding: 5,
-        margin: 5,
-        bottom: 0,
-        right: 0,
-    },
-    image_camera: {
-        aspectRatio: 1,
-        height: undefined,
-        width: '100%'
-    },
-});
