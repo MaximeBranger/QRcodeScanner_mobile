@@ -29,9 +29,15 @@ export default function ScanScreen({navigation}) {
 
     if (!permission.granted) {
         return (
-            <View>
-                <Text style={CommonStyle.page}>L'accès à la caméra est requis pour utiliser cette fonctionnalité.</Text>
-                <Button onPress={requestPermission} title="Autoriser l'accès à la caméra" />
+            <View style={CommonStyle.page}>
+                <Text>L'accès à la caméra est requis pour utiliser cette fonctionnalité.</Text>
+                <Pressable
+                    style={CommonStyle.button}
+                    onPress={requestPermission}>
+                    <Text>
+                        Autoriser l'accès à la caméra
+                    </Text>
+                </Pressable>
             </View>
         );
     }
@@ -78,7 +84,6 @@ export default function ScanScreen({navigation}) {
                             <Pressable
                                 style={CommonStyle.button}
                                 onPress={() => {
-                                        getHistory();
                                         setScanned(false);
                                     }
                                 }>

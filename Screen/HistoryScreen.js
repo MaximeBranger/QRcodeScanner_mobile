@@ -1,10 +1,11 @@
 
-import {StyleSheet, ActivityIndicator, FlatList} from 'react-native';
+import {Text, ActivityIndicator, FlatList, View} from 'react-native';
 import {AsyncStorageManager} from "../Utils/AsyncStorageManager";
 import {useEffect, useState, useContext } from "react";
 import HistoryButton from "../Component/HistoryButton";
 import Colors from "../Utils/Colors";
 import {HistoryStyle} from "../Style/HistoryStyle";
+import {CommonStyle} from "../Style/CommonStyle";
 
 
 export default function HistoryScreen({navigation}) {
@@ -24,6 +25,8 @@ export default function HistoryScreen({navigation}) {
         const value = await AsyncStorageManager.getItem('history');
         if (value !== null) {
             setHistory(value.slice(0, page * 10));
+        } else {
+            setHistory([]);
         }
         setIsLoading(false);
     }
@@ -40,6 +43,14 @@ export default function HistoryScreen({navigation}) {
     useEffect(() => {
         getHistory();
     }, [needUpdate]);
+
+    if (history.length === 0) {
+        return (
+            <View style={CommonStyle.page}>
+                <Text>Aucune donnée à afficher</Text>
+            </View>
+        );
+    }
 
     return (
         <FlatList
